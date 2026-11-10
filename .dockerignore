@@ -1,0 +1,14 @@
+.git
+.venv
+**/__pycache__
+.pytest_cache
+.local
+terraform
+ansible
+jenkins
+monitoring
+docs
+tests
+*.xml
+*.tfstate*
+.env

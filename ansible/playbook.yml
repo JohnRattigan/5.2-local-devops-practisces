@@ -1,0 +1,16 @@
+---
+- name: Configure the Terraform Linux container
+  hosts: linux
+  gather_facts: false
+  vars_files:
+    - vars/main.yml
+    - vars/vault.yml
+  pre_tasks:
+    - name: Bootstrap Python for Ansible modules
+      ansible.builtin.raw: test -x /usr/bin/python3 || (apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 update && DEBIAN_FRONTEND=noninteractive apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=20 install -y python3 && echo LAB_BOOTSTRAPPED)
+      register: bootstrap
+      changed_when: "'LAB_BOOTSTRAPPED' in bootstrap.stdout"
+    - name: Gather facts
+      ansible.builtin.setup:
+  roles:
+    - common

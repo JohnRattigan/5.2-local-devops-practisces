@@ -1,0 +1,17 @@
+[unix_http_server]
+file=/run/devops-mini-lab-supervisor.sock
+chmod=0700
+[supervisord]
+pidfile=/run/devops-mini-lab-supervisor.pid
+logfile=/var/log/devops-mini-lab-supervisor.log
+[rpcinterface:supervisor]
+supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
+[supervisorctl]
+serverurl=unix:///run/devops-mini-lab-supervisor.sock
+[program:lab-http]
+command=/usr/bin/python3 -m http.server {{ lab_port }} --bind 0.0.0.0 --directory {{ lab_directory }}
+user={{ lab_user }}
+autostart=true
+autorestart=true
+stdout_logfile=/var/log/devops-mini-lab-http.log
+stderr_logfile=/var/log/devops-mini-lab-http-error.log

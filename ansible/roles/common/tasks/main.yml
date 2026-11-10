@@ -1,0 +1,72 @@
+---
+- name: Update package cache
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+- name: Install example packages and process supervisor
+  ansible.builtin.apt:
+    name: [curl, supervisor]
+    state: present
+- name: Remove example package
+  ansible.builtin.apt:
+    name: nano
+    state: absent
+- name: Create Linux user
+  ansible.builtin.user:
+    name: "{{ lab_user }}"
+    create_home: true
+    shell: /bin/bash
+- name: Create content directory
+  ansible.builtin.file:
+    path: "{{ lab_directory }}"
+    state: directory
+    owner: "{{ lab_user }}"
+    group: "{{ lab_user }}"
+    mode: '0750'
+- name: Render public content
+  ansible.builtin.template:
+    src: index.html.j2
+    dest: "{{ lab_directory }}/index.html"
+    owner: "{{ lab_user }}"
+    group: "{{ lab_user }}"
+    mode: '0640'
+  notify: Restart lab process
+- name: Store dummy Vault configuration privately
+  ansible.builtin.copy:
+    content: "training_token={{ vault_dummy_secret }}\n"
+    dest: /home/{{ lab_user }}/training.conf
+    owner: "{{ lab_user }}"
+    group: "{{ lab_user }}"
+    mode: '0600'
+  no_log: true
+- name: Render standalone supervisor configuration
+  ansible.builtin.template:
+    src: supervisor.conf.j2
+    dest: /etc/devops-mini-lab-supervisor.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart lab process
+- name: Start supervisor when absent
+  ansible.builtin.shell: |
+    if supervisorctl -c /etc/devops-mini-lab-supervisor.conf pid >/dev/null 2>&1; then
+      echo running
+    else
+      supervisord -c /etc/devops-mini-lab-supervisor.conf
+      echo started
+    fi
+  register: supervisor_start
+  changed_when: "'started' in supervisor_start.stdout"
+- name: Apply pending configuration changes
+  ansible.builtin.meta: flush_handlers
+- name: Verify HTTP process inside container
+  ansible.builtin.uri:
+    url: "http://127.0.0.1:{{ lab_port }}/"
+    return_content: true
+  register: lab_http
+  retries: 5
+  delay: 1
+  until: lab_http.status == 200
+- name: Check rendered message
+  ansible.builtin.assert:
+    that: lab_message in lab_http.content

@@ -1,0 +1,7 @@
+---
+- name: Restart lab process
+  ansible.builtin.shell: |
+    supervisorctl -c /etc/devops-mini-lab-supervisor.conf reread
+    supervisorctl -c /etc/devops-mini-lab-supervisor.conf update
+    supervisorctl -c /etc/devops-mini-lab-supervisor.conf restart lab-http
+  changed_when: true

@@ -1,0 +1,6 @@
+-r requirements-test.txt
+ansible-core==2.17.10
+cryptography==50.0.2
+resolvelib==1.0.1
+cffi==2.1.1
+pycparser==3.12

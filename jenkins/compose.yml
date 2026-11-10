@@ -1,0 +1,19 @@
+services:
+  jenkins:
+    build:
+      context: .
+    ports:
+      - "127.0.0.1:8080:8080"
+    environment:
+      KUBECONFIG: /var/jenkins_home/lab-kubeconfig
+    volumes:
+      - jenkins-home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../.local/jenkins-kubeconfig:/var/jenkins_home/lab-kubeconfig:ro
+    networks: [cluster]
+volumes:
+  jenkins-home:
+networks:
+  cluster:
+    external: true
+    name: k3d-devops-mini-lab

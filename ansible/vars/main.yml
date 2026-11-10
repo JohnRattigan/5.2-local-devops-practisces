@@ -1,0 +1,4 @@
+lab_user: apprentice
+lab_directory: /opt/devops-mini-lab
+lab_port: 8081
+lab_message: Hello from Ansible
